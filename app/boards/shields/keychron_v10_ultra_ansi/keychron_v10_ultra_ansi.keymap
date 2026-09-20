@@ -195,6 +195,16 @@
         //     key-positions = <120>;
         //     bindings = <&mkp 0>;
         // };
+        combo_caps_word {
+            timeout-ms = <50 >;
+            key-positions = <64 76>;
+            bindings = <&caps_word>;
+        };
+        combo_globe {
+            timeout-ms = <50 >;
+            key-positions = <78>;
+            bindings = <&kp GLOBE>;
+        };
     };
     keymap {
         compatible = "zmk,keymap";
@@ -264,4 +274,7 @@
 };
 &inc_dec_kp {
     tap-ms=<20>;
+};
+&caps_word {
+    continue-list = <UNDERSCORE MINUS BACKSPACE DELETE>;
 };
