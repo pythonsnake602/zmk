@@ -94,3 +94,5 @@ int32_t zmk_matrix_transform_row_column_to_position(zmk_matrix_transform_t mt, u
 
     return val - INDEX_OFFSET;
 };
+#define KC_LEN 1 // DT_PROP_LEN(DT_NODELABEL(kscan1),input_gpios)
+uint8_t max_keyboard_pos(void) { return transform[ARRAY_SIZE(transform) - 1] - KC_LEN; }

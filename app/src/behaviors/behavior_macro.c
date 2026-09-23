@@ -172,14 +172,14 @@ static void queue_macro(struct zmk_behavior_binding_event *event,
 
             switch (state.mode) {
             case MACRO_MODE_TAP:
-                zmk_behavior_queue_add(event, binding, true, state.tap_ms);
-                zmk_behavior_queue_add(event, binding, false, state.wait_ms);
+                zmk_behavior_queue_add(event, binding, true, state.tap_ms * 1000);
+                zmk_behavior_queue_add(event, binding, false, state.wait_ms * 1000);
                 break;
             case MACRO_MODE_PRESS:
-                zmk_behavior_queue_add(event, binding, true, state.wait_ms);
+                zmk_behavior_queue_add(event, binding, true, state.wait_ms * 1000);
                 break;
             case MACRO_MODE_RELEASE:
-                zmk_behavior_queue_add(event, binding, false, state.wait_ms);
+                zmk_behavior_queue_add(event, binding, false, state.wait_ms * 1000);
                 break;
             default:
                 LOG_ERR("Unknown macro mode: %d", state.mode);
@@ -199,6 +199,13 @@ static int on_macro_binding_pressed(struct zmk_behavior_binding *binding,
                                                          .wait_ms = cfg->default_wait_ms,
                                                          .start_index = 0,
                                                          .count = state->press_bindings_count};
+#if CONFIG_ZMK_LAUNCHER
+    void dynamic_keymap_macro_send(uint8_t id);
+    if (memcmp(binding->behavior_dev, "zm_ma", 5) == 0) {
+        LOG_DBG("via macro,p1:%x,p2:%d", binding->param1, binding->param2);
+        dynamic_keymap_macro_send(binding->param1 & 0xff);
+    } else
+#endif
 
     queue_macro(&event, cfg->bindings, trigger_state, binding);
 

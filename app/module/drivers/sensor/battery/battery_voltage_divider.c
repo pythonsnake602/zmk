@@ -12,8 +12,10 @@
 #include <zephyr/drivers/adc.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
+// #include <zmk/leds_pwm_driver.h>
 
 #include "battery_common.h"
+#include "trace.h"
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -67,6 +69,7 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
     as->calibrate = false;
 
     if (rc == 0) {
+#if (CONFIG_ADC == 0)
         int32_t val = drv_data->value.adc_raw;
 
         adc_raw_to_millivolts(adc_ref_internal(drv_data->adc), drv_data->acc.gain, as->resolution,
@@ -76,9 +79,18 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
         LOG_DBG("ADC raw %d ~ %d mV => %d mV", drv_data->value.adc_raw, val, millivolts);
         uint8_t percent = lithium_ion_mv_to_pct(millivolts);
         LOG_DBG("Percent: %d", percent);
+#elif (CONFIG_ADC == 1)
+        uint16_t raw = ((uint16_t *)(as->buffer))[0];
+        uint16_t millivolts = raw * (uint64_t)drv_cfg->full_ohm / drv_cfg->output_ohm;
+        uint8_t percent = lithium_ion_mv_to_pct_rtk(raw);
+        LOG_WRN("battery voltage %d,%d(mv) %d(percent) %d(channel)", raw, millivolts, percent,
+                drv_cfg->io_channel.channel);
+#endif
 
         drv_data->value.millivolts = millivolts;
         drv_data->value.state_of_charge = percent;
+
+        // led_event_handler(percent);
     } else {
         LOG_DBG("Failed to read ADC: %d", rc);
     }
@@ -131,7 +143,7 @@ static int bvd_init(const struct device *dev) {
 #endif // DT_INST_NODE_HAS_PROP(0, power_gpios)
 
     drv_data->as = (struct adc_sequence){
-        .channels = BIT(0),
+        .channels = BIT(drv_cfg->io_channel.channel),
         .buffer = &drv_data->value.adc_raw,
         .buffer_size = sizeof(drv_data->value.adc_raw),
         .oversampling = 4,
@@ -146,6 +158,14 @@ static int bvd_init(const struct device *dev) {
         .input_positive = SAADC_CH_PSELP_PSELP_AnalogInput0 + drv_cfg->io_channel.channel,
     };
 
+    drv_data->as.resolution = 12;
+#elif CONFIG_ADC
+    drv_data->acc = (struct adc_channel_cfg){
+        .gain = ADC_GAIN_1,
+        .reference = ADC_REF_INTERNAL,
+        .acquisition_time = ADC_ACQ_TIME_DEFAULT,
+        .differential = 0,
+    };
     drv_data->as.resolution = 12;
 #else
 #error Unsupported ADC

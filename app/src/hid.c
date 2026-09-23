@@ -65,6 +65,13 @@ int zmk_hid_unregister_mod(zmk_mod_t modifier) {
         return -EINVAL;
     }
     explicit_modifier_counts[modifier]--;
+#if CONFIG_ZMK_LAUNCHER
+    extern uint8_t macro_running;
+    if (macro_running) {
+        explicit_modifier_counts[modifier] = 0;
+        LOG_WRN("clear modifier:%d", modifier);
+    }
+#endif
     LOG_DBG("Modifier %d count: %d", modifier, explicit_modifier_counts[modifier]);
     if (explicit_modifier_counts[modifier] == 0) {
         LOG_DBG("Modifier %d released", modifier);
