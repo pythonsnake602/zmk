@@ -1,0 +1,60 @@
+# Copyright (c) 2024
+# SPDX-License-Identifier: MIT
+
+config SHIELD_KEYCHRON_V1MAX
+    bool
+
+config ENABLE_WIN_LOCK
+    bool
+
+config ENABLE_WIN_LOCK_INDICATOR
+    bool
+    depends on ENABLE_WIN_LOCK
+
+config ENABLE_GPIO_LED
+    bool
+
+config ENABLE_NKRO_LED_FLASH
+    bool
+
+config KEYCHRON_RGB_ENABLE
+    bool
+
+config SNAP_CLICK_ENABLE
+    bool
+
+config RETAIL_DEMO_ENABLE
+    bool
+
+config SOFTWARE_SWITCH_LAYER
+    bool
+
+config MAC_VIA_FUNC
+    bool
+
+config CHANGE_REPORT_RATE
+    bool
+
+config ADAPATIVE_NKRO
+   bool
+
+config FAST_KSCAN
+    bool
+
+config ADD_PPT_REPORT_RATE
+    bool
+
+config COL_595_OUTPUT
+    bool
+config COL_595_AND_GPIOS_OUTPUT
+    bool
+
+config ENABLE_FLASH_PROTECT
+    bool
+
+config KEYCHRON_FWU_STRING_NAME
+    string "Keychron FWU string name"
+
+config ZMK_LED_INIT_PRIORITY
+    int "LED Init Priority"
+    default 40
