@@ -16,6 +16,10 @@
 
 #include <zephyr/logging/log.h>
 
+#include "zmk/endpoints.h"
+#include "zmk/mode_monitor.h"
+#include "launcher/launcher.h"
+
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/matrix.h>
@@ -156,6 +160,16 @@ static const struct zmk_physical_layout *const layouts[] = {
 
 #endif
 
+bool dip_switch_update_user(uint8_t index, bool active);
+void process_rgb_matrix(uint8_t row, uint8_t col, bool pressed);
+
+#if CONFIG_ZMK_LAUNCHER
+static uint32_t matrix_rows[DT_PROP(DT_PATH(matrix_transform), rows)];
+#endif
+#if CONFIG_PM
+static int key_press_num = 0;
+#endif
+
 const struct zmk_physical_layout *active;
 
 size_t zmk_physical_layouts_get_list(struct zmk_physical_layout const *const **dest_layouts) {
@@ -186,6 +200,32 @@ static void zmk_physical_layout_kscan_callback(const struct device *dev, uint32_
         return;
     }
 
+#if CONFIG_PM
+    /* cpu will check dlps status modules by modules in idle task, in this case interrupt is
+       disabled when the scan interval of keyscan is set <100us, it may result in unstable interrupt
+       intervals in this case we can skip check before wfi/dlps
+     */
+    if (row < ((DT_PROP(DT_PATH(matrix_transform), rows) - 1))) {
+        if (pressed) {
+            key_press_num++;
+            if (zmk_endpoints_selected().transport == ZMK_TRANSPORT_USB) {
+                pm_no_check_status_before_enter_wfi();
+            }
+        } else {
+            key_press_num--;
+            if (key_press_num <= 0) {
+                pm_check_status_before_enter_wfi_or_dlps();
+                key_press_num = 0;
+            }
+        }
+    } else {
+        if (row == (DT_PROP(DT_PATH(matrix_transform), rows) - 1) && column == 0) {
+            dip_switch_update_user(0, pressed ? 1 : 0);
+        }
+    }
+    // LOG_DBG("row,col is (%d %d),num:%d,press:%d", row, column,key_press_num,pressed);
+#endif
+
     struct zmk_kscan_event ev = {
         .row = row,
         .column = column,
@@ -209,6 +249,13 @@ static void zmk_physical_layouts_kscan_process_msgq(struct k_work *item) {
             continue;
         }
 
+#if CONFIG_ZMK_LAUNCHER
+        if (pressed)
+            matrix_rows[ev.row] |= 1 << ev.column;
+        else
+            matrix_rows[ev.row] &= ~(1 << ev.column);
+#endif
+
         LOG_DBG("Row: %d, col: %d, position: %d, pressed: %s", ev.row, ev.column, position,
                 (pressed ? "true" : "false"));
         raise_zmk_position_state_changed(
@@ -216,6 +263,10 @@ static void zmk_physical_layouts_kscan_process_msgq(struct k_work *item) {
                                                 .state = pressed,
                                                 .position = position,
                                                 .timestamp = k_uptime_get()});
+
+#if CONFIG_LED_STRIP
+        process_rgb_matrix(ev.row, ev.column, pressed);
+#endif
     }
 }
 
@@ -484,7 +535,24 @@ static int zmk_physical_layouts_init(void) {
         selected_to_stock_map[i] = i;
     }
 
+#if CONFIG_DEBUG_IO
+    gpio_pin_configure_dt(&debug_io, GPIO_OUTPUT);
+#endif
+
     return zmk_physical_layouts_select_initial();
 }
+
+#if CONFIG_ZMK_LAUNCHER
+uint32_t matrix_get_row(uint8_t row) { return matrix_rows[row]; }
+#endif
+
+void toggle_debug_pin(void) {
+#if CONFIG_DEBUG_IO
+    gpio_pin_toggle_dt(&debug_io);
+#endif
+}
+
+bool all_key_up(void) { return key_press_num == 0; }
+uint8_t get_key_press_num(void) { return key_press_num; }
 
 SYS_INIT(zmk_physical_layouts_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

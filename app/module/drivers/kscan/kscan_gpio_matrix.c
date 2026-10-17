@@ -1001,25 +1001,6 @@ static int kscan_matrix_init(const struct device *dev) {
     return 0;
 }
 
-#if IS_ENABLED(CONFIG_PM_DEVICE)
-
-static int kscan_matrix_pm_action(const struct device *dev, enum pm_device_action action) {
-    switch (action) {
-    case PM_DEVICE_ACTION_SUSPEND:
-        kscan_matrix_disconnect_inputs(dev);
-        kscan_matrix_disconnect_outputs(dev);
-
-        return kscan_matrix_disable(dev);
-    case PM_DEVICE_ACTION_RESUME:
-        kscan_matrix_setup_pins(dev);
-        return kscan_matrix_enable(dev);
-    default:
-        return -ENOTSUP;
-    }
-}
-
-#endif // IS_ENABLED(CONFIG_PM_DEVICE)
-
 static const struct kscan_driver_api kscan_matrix_api = {
     .config = kscan_matrix_configure,
     .enable_callback = kscan_matrix_enable,

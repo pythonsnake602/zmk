@@ -343,32 +343,32 @@ void send_keyboard_report_callback(struct k_work *work) {
             return;
         }
 
-            struct bt_gatt_notify_params notify_params = {
-                .attr = &hog_svc.attrs[5],
-                .data = &report,
-                .len = CONFIG_ZMK_HID_KEYBOARD_REPORT_SIZE + 2, // sizeof(report),
-            };
-            if (report._reserved) {
+        struct bt_gatt_notify_params notify_params = {
+            .attr = &hog_svc.attrs[5],
+            .data = &report,
+            .len = CONFIG_ZMK_HID_KEYBOARD_REPORT_SIZE + 2, // sizeof(report),
+        };
+        if (report._reserved) {
 
-                uint8_t buffer[(ZMK_HID_KEYBOARD_NKRO_MAX_USAGE + 1) / 8 + 1];
-                buffer[0] = report.modifiers;
-                memcpy(buffer + 1, report.keys, (ZMK_HID_KEYBOARD_NKRO_MAX_USAGE + 1) / 8);
+            uint8_t buffer[(ZMK_HID_KEYBOARD_NKRO_MAX_USAGE + 1) / 8 + 1];
+            buffer[0] = report.modifiers;
+            memcpy(buffer + 1, report.keys, (ZMK_HID_KEYBOARD_NKRO_MAX_USAGE + 1) / 8);
 
-                notify_params.attr = &hog_svc.attrs[13];
-                notify_params.data = buffer;
-                notify_params.len = sizeof(report) - 1;
-            }
-            // toggle_debug_pin();
-            int err = bt_gatt_notify_cb(conn, &notify_params);
-            // toggle_debug_pin();
-            if (err == -EPERM) {
-                bt_conn_set_security(conn, BT_SECURITY_L2);
-            } else if (err) {
-                LOG_DBG("Error notifying %d", err);
-            }
-
-            bt_conn_unref(conn);
+            notify_params.attr = &hog_svc.attrs[13];
+            notify_params.data = buffer;
+            notify_params.len = sizeof(report) - 1;
         }
+        // toggle_debug_pin();
+        int err = bt_gatt_notify_cb(conn, &notify_params);
+        // toggle_debug_pin();
+        if (err == -EPERM) {
+            bt_conn_set_security(conn, BT_SECURITY_L2);
+        } else if (err) {
+            LOG_DBG("Error notifying %d", err);
+        }
+
+        bt_conn_unref(conn);
+    }
         // else
         // {
         //     LOG_ERR("msg:%d",k_msgq_num_used_get(&zmk_hog_keyboard_msgq));
@@ -379,7 +379,6 @@ void send_keyboard_report_callback(struct k_work *work) {
         //         LOG_ERR("ppt send err:%d",ret);
         //     }
         // }
-    }
 }
 
 K_WORK_DEFINE(hog_keyboard_work, send_keyboard_report_callback);
@@ -417,30 +416,29 @@ void send_consumer_report_callback(struct k_work *work) {
             return;
         }
 
-            struct bt_gatt_notify_params notify_params = {
-                .attr = &hog_svc.attrs[9],
-                .data = &report,
-                .len = sizeof(report),
-            };
+        struct bt_gatt_notify_params notify_params = {
+            .attr = &hog_svc.attrs[9],
+            .data = &report,
+            .len = sizeof(report),
+        };
 
-            int err = bt_gatt_notify_cb(conn, &notify_params);
-            if (err == -EPERM) {
-                bt_conn_set_security(conn, BT_SECURITY_L2);
-            } else if (err) {
-                LOG_DBG("Error notifying %d", err);
-            }
-
-            bt_conn_unref(conn);
+        int err = bt_gatt_notify_cb(conn, &notify_params);
+        if (err == -EPERM) {
+            bt_conn_set_security(conn, BT_SECURITY_L2);
+        } else if (err) {
+            LOG_DBG("Error notifying %d", err);
         }
-        // else
-        // {
-        //     int ret=zmk_ppt_send_consumer_report((uint8_t*)&report,2);
-        //     if(ret !=0)
-        //     {
-        //         LOG_ERR("ppt send err:%d",ret);
-        //     }
-        // }
+
+        bt_conn_unref(conn);
     }
+    // else
+    // {
+    //     int ret=zmk_ppt_send_consumer_report((uint8_t*)&report,2);
+    //     if(ret !=0)
+    //     {
+    //         LOG_ERR("ppt send err:%d",ret);
+    //     }
+    // }
 };
 
 K_WORK_DEFINE(hog_consumer_work, send_consumer_report_callback);

@@ -129,8 +129,8 @@ enum rgb_effects {
 #define LED_HITS_TO_REMEMBER 8
 #define RGB_MATRIX_MAXIMUM_BRIGHTNESS UINT8_MAX
 
-#define MATRIX_ROWS (ZMK_MATRIX_ROWS - 1)
-#define MATRIX_COLS ZMK_MATRIX_COLS
+#define MATRIX_ROWS (DT_N_S_matrix_transform_P_rows - 1)
+#define MATRIX_COLS DT_N_S_matrix_transform_P_columns
 
 #include "rgb_index.h"
 

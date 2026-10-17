@@ -219,22 +219,6 @@ void set_profile_address(uint8_t index, const bt_addr_le_t *addr) {
 #endif
     k_work_submit(&raise_profile_changed_event_work);
 }
-bool zmk_ble_profile_is_connected(uint8_t index) {
-    struct bt_conn *conn;
-    struct bt_conn_info info;
-    bt_addr_le_t *addr = &profiles[index].peer;
-    if (!bt_addr_le_cmp(addr, BT_ADDR_LE_ANY)) {
-        return false;
-    } else if ((conn = bt_conn_lookup_addr_le(profiles[index].bt_id, addr)) == NULL) {
-        return false;
-    }
-
-    bt_conn_get_info(conn, &info);
-
-    bt_conn_unref(conn);
-
-    return info.state == BT_CONN_STATE_CONNECTED;
-}
 bool zmk_ble_active_profile_is_connected(void) {
     return zmk_ble_profile_is_connected(active_profile);
 }
@@ -1007,7 +991,7 @@ static int zmk_ble_complete_startup(void) {
     return 0;
 }
 
-static int zmk_ble_init(void) {
+int zmk_ble_init(void) {
     // add flag to prevent multi init!
     static bool inited = false;
     if (bat_is_shutdown() && !zmk_usb_power_on())

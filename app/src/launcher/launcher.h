@@ -189,8 +189,8 @@ enum {
 };
 
 #define ZMK_BUILDDATE "2025-05-24"
-#define MATRIX_COLS ZMK_MATRIX_COLS
-#define MATRIX_ROWS (ZMK_MATRIX_ROWS - 1)
+#define MATRIX_COLS DT_N_S_matrix_transform_P_columns
+#define MATRIX_ROWS (DT_N_S_matrix_transform_P_rows - 1)
 #define KEYMAP_LEN (MATRIX_COLS * MATRIX_ROWS * 2)
 #if CONFIG_LED_STRIP
 #define RGB_MATRIX_ENABLE

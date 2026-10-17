@@ -199,21 +199,27 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
             }
             break;
 #endif // IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
-    default:
-        // LOG_HEXDUMP_ERR(*data,*len,"set report");
-        if (hid_protocol != HID_PROTOCOL_REPORT) {
-            if (zmk_endpoints_selected().transport == ZMK_TRANSPORT_USB && (*len == 1)) {
-                struct zmk_hid_led_report report;
-                uint8_t *p_data = *data;
-                report.body.leds = p_data[0];
-                struct zmk_endpoint_instance endpoint = {
-                    .transport = ZMK_TRANSPORT_USB,
-                };
-                zmk_hid_indicators_process_report(&report.body, endpoint);
+        default:
+            // LOG_HEXDUMP_ERR(*data,*len,"set report");
+            if (hid_protocol != HID_PROTOCOL_REPORT) {
+                if (zmk_endpoints_selected().transport == ZMK_TRANSPORT_USB && (*len == 1)) {
+                    struct zmk_hid_led_report report;
+                    uint8_t *p_data = *data;
+                    report.body.leds = p_data[0];
+                    struct zmk_endpoint_instance endpoint = {
+                        .transport = ZMK_TRANSPORT_USB,
+                    };
+                    zmk_hid_indicators_process_report(&report.body, endpoint);
+                }
             }
+            LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
+            return -EINVAL;
         }
-        LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
-        return -EINVAL;
+        break;
+    default:
+        LOG_ERR("Unsupported report type %d requested",
+                (setup->wValue & HID_GET_REPORT_TYPE_MASK) >> 8);
+        return -ENOTSUP;
     }
 
     return 0;

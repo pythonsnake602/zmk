@@ -420,23 +420,6 @@ static int kscan_direct_init(const struct device *dev) {
     return 0;
 }
 
-#if IS_ENABLED(CONFIG_PM_DEVICE)
-
-static int kscan_direct_pm_action(const struct device *dev, enum pm_device_action action) {
-    switch (action) {
-    case PM_DEVICE_ACTION_SUSPEND:
-        kscan_direct_disconnect_inputs(dev);
-        return kscan_direct_disable(dev);
-    case PM_DEVICE_ACTION_RESUME:
-        kscan_direct_init_inputs(dev);
-        return kscan_direct_enable(dev);
-    default:
-        return -ENOTSUP;
-    }
-}
-
-#endif // IS_ENABLED(CONFIG_PM_DEVICE)
-
 static const struct kscan_driver_api kscan_direct_api = {
     .config = kscan_direct_configure,
     .enable_callback = kscan_direct_enable,

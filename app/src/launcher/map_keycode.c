@@ -225,6 +225,7 @@ uint8_t mod_keycode_to_launcher(uint8_t keycode) {
 #define QK_LAYER_MOD_GET_LAYER(kc) (((kc) >> 5) & 0xF)
 #define QK_LAYER_MOD_GET_MODS(kc) ((kc) & 0x1F)
 
+ZMK_MATRIX_TRANSFORM_EXTERN(DT_CHOSEN(zmk_matrix_transform));
 void launcher_keycode_to_binding(uint8_t keycode, struct zmk_behavior_binding *binding) {
     binding->param2 = 0;
     switch (keycode) {
@@ -253,8 +254,8 @@ void launcher_keycode_to_binding(uint8_t keycode, struct zmk_behavior_binding *b
 }
 
 void set_zmk_keymap(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode) {
-
-    int32_t position = zmk_matrix_transform_row_column_to_position(row, column);
+    /*
+    int32_t position = zmk_matrix_transform_row_column_to_position(&zmk_matrix_transform_DT_CHOSEN_zmk_matrix_transform, row, column);
     if (position < 0)
         return;
     struct zmk_behavior_binding binding;
@@ -567,6 +568,7 @@ void set_zmk_keymap(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode
     // LOG_DBG("layer:%d,row:%d,col:%d,keycode:%d to
     // binding:%s,p1:%x,p2:%x",layer,row,column,keycode,binding.behavior_dev,binding.param1,binding.param2);
     update_zmk_keymap(layer, position, &binding);
+    */
 }
 #ifdef ENCODER_MAP_ENABLE
 void set_zmk_encoders(uint8_t layer, bool clockwise, uint16_t keycode) {
@@ -709,10 +711,11 @@ void set_zmk_encoders(uint8_t layer, bool clockwise, uint16_t keycode) {
 #endif
 
 void generate_launcher_keymaps(void) {
+    /*
     for (int layer = 0; layer < DYNAMIC_KEYMAP_LAYER_COUNT; layer++) {
         for (int row = 0; row < MATRIX_ROWS; row++) {
             for (int column = 0; column < MATRIX_COLS; column++) {
-                int32_t position = zmk_matrix_transform_row_column_to_position(row, column);
+                int32_t position = zmk_matrix_transform_row_column_to_position(&zmk_matrix_transform_DT_CHOSEN_zmk_matrix_transform, row, column);
                 if (position >= 0) {
                     struct zmk_behavior_binding *binding = get_zmk_keymap(layer, position);
                     char *behavior_dev = binding->behavior_dev;
@@ -1016,5 +1019,5 @@ void generate_launcher_keymaps(void) {
             binding += 1;
         }
 #endif
-    }
+    }*/
 }

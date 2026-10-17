@@ -18,6 +18,7 @@
 #include <zmk/app_wdt.h>
 #include <zephyr/drivers/watchdog.h>
 #include <zmk/leds.h>
+
 #ifdef CONFIG_ZMK_SSD1306
 #include <zmk/disp.h>
 #endif
@@ -40,7 +41,7 @@ struct counter_top_cfg counter_cfg;
 #include <zmk/events/position_state_changed.h>
 #include <zmk/events/sensor_event.h>
 
-#include <zmk/pm.h>
+#include "pm.h"
 
 #include "trace.h"
 #include <zmk/activity.h>
@@ -76,6 +77,16 @@ static uint32_t activity_last_uptime;
 uint32_t max_sleep_time = MAX_SLEEP_MS;
 uint32_t max_idle_time = MAX_IDLE_MS;
 
+extern bool is_app_enabled_dlps;
+void bat_low_check(uint8_t keypress);
+bool all_key_up(void);
+bool bat_is_shutdown(void);
+uint8_t zmk_usb_power_on(void);
+bool force_to_sleep(void);
+void stop_battery_timer(void);
+void keyboard_matrix_shutdown(void);
+void pm_check_status_before_enter_wfi_or_dlps(void);
+
 int raise_event(void) {
     return raise_zmk_activity_state_changed(
         (struct zmk_activity_state_changed){.state = activity_state});
@@ -93,8 +104,12 @@ enum zmk_activity_state zmk_activity_get_state(void) { return activity_state; }
 
 bool zmk_rgb_test(struct zmk_position_state_changed *pos_state);
 uint8_t max_keyboard_pos(void);
-static int note_activity(void) {
+static int note_activity() {
     activity_last_uptime = k_uptime_get();
+    return set_state(ZMK_ACTIVITY_ACTIVE);
+}
+
+static int activity_event_listener(const zmk_event_t *eh) {
     struct zmk_position_state_changed *pos = as_zmk_position_state_changed(eh);
     struct zmk_sensor_event *sensor = as_zmk_sensor_event(eh);
     // LOG_ERR("pos:%d,max_pos:%d",pos->position,max_keyboard_pos());
@@ -147,10 +162,9 @@ static int note_activity(void) {
             app_system_reset(WDT_FLAG_RESET_SOC);
         }
     }
-    return set_state(ZMK_ACTIVITY_ACTIVE);
-}
 
-static int activity_event_listener(const zmk_event_t *eh) { return note_activity(); }
+    return note_activity();
+}
 
 extern uint8_t usb_configured;
 void activity_work_handler(struct k_work *work) {

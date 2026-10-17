@@ -1,13 +1,5 @@
-# x-release-please-start-major
-VERSION_MAJOR = 0
-# x-release-please-end
-
-# x-release-please-start-minor
-VERSION_MINOR = 3
-# x-release-please-end
-
-# x-release-please-start-patch
-PATCHLEVEL = 0
-# x-release-please-end
-
+VERSION_MAJOR = 1
+VERSION_MINOR = 0
+PATCHLEVEL = 2
 VERSION_TWEAK = 0
+EXTRAVERSION = Zk

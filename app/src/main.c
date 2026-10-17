@@ -159,9 +159,6 @@ int main(void) {
         // #if CONFIG_SHIELD_KEYCHRON_RS45_ANSI
         //         mode_init();
         // #endif
-        if (zmk_kscan_init(DEVICE_DT_GET(ZMK_MATRIX_NODE_ID)) != 0) {
-            return -ENOTSUP;
-        }
 #ifdef CONFIG_ZMK_SSD1306
         disp_init();
 #endif

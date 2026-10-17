@@ -392,8 +392,8 @@ static int hid_indicator_listener(const zmk_event_t *eh) {
     return ZMK_EV_EVENT_HANDLED;
 }
 static ZMK_LISTENER(led_listener, hid_indicator_listener);
-static ZMK_SUBSCRIPTION(led_listener, zmk_hid_indicators_changed);
-static ZMK_SUBSCRIPTION(led_listener, zmk_led_state_changed);
+ZMK_SUBSCRIPTION(led_listener, zmk_hid_indicators_changed);
+ZMK_SUBSCRIPTION(led_listener, zmk_led_state_changed);
 
 uint32_t aon_read_reg(void) { return AON_REG_READ(AON_NS_REG15X_APP); }
 void aon_write_reg(uint8_t value) { AON_REG_WRITE(AON_NS_REG15X_APP, value); }

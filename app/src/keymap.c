@@ -982,13 +982,11 @@ int keymap_init(void) {
 
 SYS_INIT(keymap_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
-ZMK_SUBSCRIPTION(keymap, zmk_position_state_changed);
-
 #if CONFIG_ZMK_LAUNCHER
 void update_zmk_keymap(uint8_t layer, uint8_t pos, struct zmk_behavior_binding *binding) {
-    zmk_keymap[layer][pos].behavior_dev = binding->behavior_dev;
-    zmk_keymap[layer][pos].param1 = binding->param1;
-    zmk_keymap[layer][pos].param2 = binding->param2;
+    //zmk_keymap[layer][pos].behavior_dev = binding->behavior_dev;
+    //zmk_keymap[layer][pos].param1 = binding->param1;
+    //zmk_keymap[layer][pos].param2 = binding->param2;
 }
 struct zmk_behavior_binding *get_zmk_keymap(uint8_t layer, uint8_t pos) {
     return &zmk_keymap[layer][pos];

@@ -298,7 +298,7 @@ endif()
 
 add_custom_target(rtk_post_build ALL
   COMMAND ${_PREPEND_HEADER} -t app_code -p build/zephyr/zmk.bin -m 1 -c sha256 -b 15
-  COMMAND ${CMAKE_COMMAND} -E rm -f build/zephyr/zmk_MP.bin
+
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 add_dependencies(rtk_post_build zephyr_final)

@@ -172,20 +172,18 @@ static int zmk_battery_update(const struct device *battery) {
     }
 
 #if IS_ENABLED(CONFIG_BT_BAS)
-        if ((state_of_charge.val1 < bat_level) || zmk_usb_power_on()) {
-            bat_level = state_of_charge.val1;
-            LOG_DBG("Setting BAS GATT battery level to %d.", bat_level);
-            // DBG_DIRECT("bt  %d.", bat_level);
-            rc = bt_bas_set_battery_level(bat_level);
+    if ((state_of_charge.val1 < bat_level) || zmk_usb_power_on()) {
+        bat_level = state_of_charge.val1;
+        LOG_DBG("Setting BAS GATT battery level to %d.", bat_level);
+        // DBG_DIRECT("bt  %d.", bat_level);
+        rc = bt_bas_set_battery_level(bat_level);
 
-            if (rc != 0) {
-                LOG_WRN("Failed to set BAS GATT battery level (err %d)", rc);
-                bat_enable_dlps = true;
-                return rc;
-            }
+        if (rc != 0) {
+            LOG_WRN("Failed to set BAS GATT battery level (err %d)", rc);
+            bat_enable_dlps = true;
+            return rc;
         }
     }
-
 #endif
 
     bat_enable_dlps = true;

@@ -378,7 +378,6 @@ SETTINGS_STATIC_HANDLER_DEFINE(behavior, "behavior", NULL, behavior_handle_set,
 
 #endif
 
-#if IS_ENABLED(CONFIG_LOG)
 extern char __zmk_behavior_ref_rom_start[];
 extern struct zmk_behavior_ref _zmk_behavior_ref_list_start[];
 extern struct zmk_behavior_ref _zmk_behavior_ref_list_end[];
